@@ -8,8 +8,31 @@
 import SwiftUI
 
 struct DepartmentView: View {
+    
+    let departmentVM = DepartmentViewModel()
+    @State private var departmentIds: Set<Department.ID> = []
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationSplitView {
+            List(departmentVM.departments, selection: $departmentIds) { department in
+                Text("\(department.displayName)")
+                    .font(.title)
+            }
+                
+        } detail: {
+            if let departmentId = departmentIds.first {
+                ArtListView(departmentId: departmentId)
+            } else {
+                Text("Select a department to see art pieces")
+                    .font(.title)
+            }
+        }.task {
+            do {
+                try await departmentVM.fetchAndDecodeDepartments()
+            } catch {
+                print("Error loading data: \(error)")
+            }
+        }
     }
 }
 

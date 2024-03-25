@@ -8,27 +8,30 @@
 import SwiftUI
 
 struct AsyncImageView: View {
-    @State var imageURL:String
+    //@State var imageURL:URL
+    @State var artwork: Artwork
+    
+    @Environment(\.openWindow) var openWindow
     
     var body: some View {
-        AsyncImage(
-            url: URL(string: imageURL ),
-                transaction: Transaction(
-                    animation: .spring(
-                        response: 0.5,
-                        dampingFraction: 0.65,
-                        blendDuration: 0.025)
-                )
-            ){ phase in
-                switch phase {
+        if let url = URL(string: artwork.primaryImage ?? "") {
+            AsyncImage(
+                url: url){ phase in
+                    switch phase {
                     case .success(let image):
-                        image
-                        .resizable().frame(width: 100, height: 100)
-                        //.resizable()
-                        //.aspectRatio(contentMode: .fill) // Maintain aspect ratio
-                       // .frame(width: 20, height: 20)
-                        //x.scaledToFit()
-                            .transition(.scale)
+                        Button {
+                            openWindow(value: artwork)
+                        } label: {
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .containerRelativeFrame(.horizontal) { size, axis in
+                                    size * 0.3
+                                }
+                                .clipShape(.rect(cornerRadius: 15))
+                        }
+                        .buttonStyle(.plain)
+                        .buttonBorderShape(.roundedRectangle(radius: 15))
                         
                     case .failure(_):
                         Image(systemName:  "ant.circle.fill")
@@ -37,17 +40,18 @@ struct AsyncImageView: View {
                             .frame(width: 20, height: 20)
                             .foregroundColor(.teal)
                             .opacity(0.6)
-
+                        
                     case .empty:
                         Image(systemName: "paintpalette")
-                        .resizable().frame(width: 100, height: 100)
+                            .resizable().frame(width: 100, height: 100)
                             .foregroundColor(.teal)
                             .opacity(0.6)
-
+                        
                     @unknown default:
                         ProgressView()
+                    }
                 }
-            }
-            .padding(40)
+                .padding(40)
+        }
     }
 }

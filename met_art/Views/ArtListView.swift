@@ -12,14 +12,20 @@ import SwiftUI
 struct ArtListView: View {
     var departmentId:Int
     let artListViewModel = ArtListViewModel()
-    
+    @State private var artworkId: Set<Artwork.ID> = []
     var body: some View {
-        VStack {
-            Text("Art List View \(artListViewModel.artwork?.objectName ?? "")").task {
-                try! await artListViewModel.fetchObjectsBy(departmentId)
-            }
-            AsyncImage(
-        }
         
+        List(artListViewModel.artworks, selection: $artworkId) { art in
+            Text("\(art.title)")
+                .font(.title)
+            AsyncImageView(artwork: art)
+        }.task {
+            do
+            {
+                try await artListViewModel.fetchObjectsBy(departmentId)
+            } catch {
+                print(error)
+            }
+        }
     }
 }

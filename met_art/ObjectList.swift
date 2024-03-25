@@ -6,3 +6,11 @@
 //
 
 import Foundation
+
+class ObjectList: Codable {
+    let id: [Int]
+    
+    enum CodingKeys: String, CodingKey {
+        case id = "objectIDs"
+    }
+}
