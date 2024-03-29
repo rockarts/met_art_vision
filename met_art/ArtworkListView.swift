@@ -38,7 +38,6 @@ struct ArtworkRow: View {
             HStack {
                 Spacer()
                 AsyncImageView(artwork: artwork)
-                    .background(Color.blue)
                 Spacer()
             }
         }
