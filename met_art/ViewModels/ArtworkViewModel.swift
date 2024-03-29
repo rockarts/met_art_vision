@@ -8,8 +8,9 @@
 import SwiftUI
 import Combine
 
+@Observable
 class ArtworkViewModel: ObservableObject {
-    @Published private(set) var artworks: [Artwork] = [] // Private(set) for controlled updates
+    private(set) var artworks: [Artwork] = [] // Private(set) for controlled updates
     private let networkService = NetworkService()
     private var subscriptions = Set<AnyCancellable>()
 
@@ -47,16 +48,15 @@ class ArtworkViewModel: ObservableObject {
     func fetchArtworks(departmentId: Int) {
         networkService.fetchObjectList(departmentIds: departmentId)
             .flatMap { objectList in
-                Publishers.MergeMany(objectList.id.prefix(100)
+                Publishers.MergeMany(objectList.id.prefix(200)
                     .map { self.networkService.fetchArtwork(objectId: $0) })
             }
-            .collect(100)
+            .collect(200)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
                  // TODO: Error Handling
             }, receiveValue: { artworks in
-                //fetchedArtworks = artworks
-                self.artworks.append(contentsOf: artworks) //= Array(fetchedArtworks)
+                self.artworks.append(contentsOf: artworks)
             })
             .store(in: &subscriptions)
     }

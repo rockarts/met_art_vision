@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Artwork: Codable, Hashable, Identifiable {
+struct Artwork: Codable, Hashable, Identifiable, Equatable {
     var id: UUID? = UUID()
     let objectID: Int
     let isHighlight: Bool
@@ -62,7 +62,7 @@ struct Artwork: Codable, Hashable, Identifiable {
     let metadataDate: String
     let repository: String
     let objectURL: String
-    let tags: [Tag]?
+    //let tags: [Tag]?
     let objectWikidata_URL: String
     let isTimelineWork: Bool
     let GalleryNumber: String 

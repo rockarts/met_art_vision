@@ -14,16 +14,10 @@ struct DepartmentView: View {
     
     var body: some View {
         NavigationSplitView {
-            List(departmentVM.departments, selection: $departmentIds) { department in
-                Text("\(department.displayName)")
-                    .font(.title)
-            }
-            
+            List(departmentVM.departments, selection: $departmentIds, rowContent: DepartmentRowView.init)
         } detail: {
             if let departmentId = departmentIds.first {
-                ArtworkListView(department: departmentVM.departments.first {
-                    $0.id == departmentId
-                }!)
+                ArtworkListView(department: departmentVM.departments.first { $0.id == departmentId}!, viewModel: ArtworkViewModel())
             } else {
                 Text("Select a department to see art pieces")
                     .font(.title)

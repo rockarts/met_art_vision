@@ -22,23 +22,25 @@ struct API {
       }
     }
   }
-  
-  /// API endpoints.
-  enum EndPoint {
-    static let baseURL = URL(string: "https://hacker-news.firebaseio.com/v0/")!
     
-    case stories
-    case story(Int)
-    
-    var url: URL {
-      switch self {
-      case .stories:
-        return EndPoint.baseURL.appendingPathComponent("newstories.json")
-      case .story(let id):
-        return EndPoint.baseURL.appendingPathComponent("item/\(id).json")
-      }
+    enum MetEndPoint {
+        static let baseURL = URL(string: "https://collectionapi.metmuseum.org/public/collection/v1/")!
+        case departments
+        case objectList(Int)
+        case object(Int)
+        
+        var url: URL {
+          switch self {
+          case .departments:
+              return MetEndPoint.baseURL.appendingPathComponent("departments")
+          case .objectList(let departmentId):
+              return MetEndPoint.baseURL.appendingPathComponent("departments/\(departmentId)")
+          case .object(let id):
+            return MetEndPoint.baseURL.appendingPathComponent("objects/\(id)")
+          }
+        }
     }
-  }
+  
 
   /// Maximum number of stories to fetch (reduce for lower API strain during development).
   var maxStories = 10
@@ -46,53 +48,54 @@ struct API {
   /// A shared JSON decoder to use in calls.
   private let decoder = JSONDecoder()
 
-  private let apiQueue = DispatchQueue(label: "API", qos: .default, attributes: .concurrent)
+    //Create a custom dispatch queue to parse json on a background thread.
+    private let apiQueue = DispatchQueue(label: "API", qos: .default, attributes: .concurrent)
   
-  // Add your API code here.
-  func story(id: Int) -> AnyPublisher<Story, Error> {
-    URLSession.shared.dataTaskPublisher(for: EndPoint.story(id).url)
-      .receive(on: apiQueue)
-      .map { $0.0 }
-      .decode(type: Story.self, decoder: decoder)
-      .catch { _ in Empty() }
-      .eraseToAnyPublisher()
-  }
-  
-  func mergedStories(ids storyIDs: [Int]) -> AnyPublisher<Story, Error> {
-    let storyIDs = Array(storyIDs.prefix(maxStories))
-    
-    precondition(!storyIDs.isEmpty)
-
-    let initialPublisher = story(id: storyIDs[0])
-    let remainder = Array(storyIDs.dropFirst())
-    
-    return remainder.reduce(initialPublisher) { (combined, id) -> AnyPublisher<Story, Error> in
-      return combined.merge(with: story(id: id))
-        .eraseToAnyPublisher()
-    }
-  }
-  
-  func stories() -> AnyPublisher<[Story], Error> {
-    URLSession.shared.dataTaskPublisher(for: EndPoint.stories.url)
-      .map { $0.0 }
-      .decode(type: [Int].self, decoder: decoder)
-      .mapError { error in
-        switch error {
-        case is URLError:
-          return Error.addressUnreachable(EndPoint.stories.url)
-        default: return Error.invalidResponse
-        }
-      }
-      .filter { !$0.isEmpty }
-      .flatMap { storyIDs in
-        return self.mergedStories(ids: storyIDs)
-      }
-      .scan([], { (stories, story) -> [Story] in
-        return stories + [story]
-      })
-      .map { stories in
-        return stories.sorted()
-      }
-      .eraseToAnyPublisher()
-  }
+//  // Add your API code here.
+//  func story(id: Int) -> AnyPublisher<Story, Error> {
+//    URLSession.shared.dataTaskPublisher(for: EndPoint.story(id).url)
+//      .receive(on: apiQueue)
+//      .map { $0.0 }
+//      .decode(type: Story.self, decoder: decoder)
+//      .catch { _ in Empty() }
+//      .eraseToAnyPublisher()
+//  }
+//  
+//  func mergedStories(ids storyIDs: [Int]) -> AnyPublisher<Story, Error> {
+//    let storyIDs = Array(storyIDs.prefix(maxStories))
+//    
+//    precondition(!storyIDs.isEmpty)
+//
+//    let initialPublisher = story(id: storyIDs[0])
+//    let remainder = Array(storyIDs.dropFirst())
+//    
+//    return remainder.reduce(initialPublisher) { (combined, id) -> AnyPublisher<Story, Error> in
+//      return combined.merge(with: story(id: id))
+//        .eraseToAnyPublisher()
+//    }
+//  }
+//  
+//  func stories() -> AnyPublisher<[Story], Error> {
+//    URLSession.shared.dataTaskPublisher(for: EndPoint.stories.url)
+//      .map { $0.0 }
+//      .decode(type: [Int].self, decoder: decoder)
+//      .mapError { error in
+//        switch error {
+//        case is URLError:
+//          return Error.addressUnreachable(EndPoint.stories.url)
+//        default: return Error.invalidResponse
+//        }
+//      }
+//      .filter { !$0.isEmpty }
+//      .flatMap { storyIDs in
+//        return self.mergedStories(ids: storyIDs)
+//      }
+//      .scan([], { (stories, story) -> [Story] in
+//        return stories + [story]
+//      })
+//      .map { stories in
+//        return stories.sorted()
+//      }
+//      .eraseToAnyPublisher()
+//  }
 }

@@ -19,6 +19,8 @@ struct Department: Codable, Identifiable, Hashable {
         case id = "departmentId"
         case displayName = "displayName"
     }
+    
+    static let example = Department(id: 6, displayName: "Asian Art")
 }
 
 
