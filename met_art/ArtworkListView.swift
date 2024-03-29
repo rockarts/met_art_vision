@@ -12,13 +12,14 @@ struct ArtworkListView: View {
     var viewModel = ArtworkViewModel()
 
     var body: some View {
-        List(viewModel.artworks, id: \.objectID) { artwork in
-            ArtworkRow(artwork: artwork)
+        if(viewModel.artworks == []) {
+            ProgressView()
+        } else {
+            List(viewModel.artworks, id: \.objectID) { artwork in
+                ArtworkRow(artwork: artwork)
+            }
+            .navigationTitle("\(department.displayName) Artworks")
         }
-        .navigationTitle("\(department.displayName) Artworks")
-//        .task {
-//            viewModel.fetchArtworks(departmentId: department.id)
-//        }
     }
     
     init(department: Department, viewModel: ArtworkViewModel = ArtworkViewModel()) {
@@ -32,9 +33,14 @@ struct ArtworkRow: View {
     let artwork: Artwork
 
     var body: some View {
-        VStack {
-            Text(artwork.title).font(.extraLargeTitle)
-            AsyncImageView(artwork: artwork)
+        VStack(alignment: .center) {
+            Text(artwork.title).font(.extraLargeTitle)                .padding()
+            HStack {
+                Spacer()
+                AsyncImageView(artwork: artwork)
+                    .background(Color.blue)
+                Spacer()
+            }
         }
     }
 }

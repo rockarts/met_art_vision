@@ -56,6 +56,7 @@ class ArtworkViewModel: ObservableObject {
             .sink(receiveCompletion: { completion in
                  // TODO: Error Handling
             }, receiveValue: { artworks in
+                print(artworks)
                 self.artworks.append(contentsOf: artworks)
             })
             .store(in: &subscriptions)

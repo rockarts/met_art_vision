@@ -24,6 +24,7 @@ class NetworkService {
         return URLSession.shared.dataTaskPublisher(for: url)
             .map(\.data)
             .decode(type: Artwork.self, decoder: JSONDecoder())
+            .filter{ $0.primaryImage != ""}
             .eraseToAnyPublisher()
     }
 }
